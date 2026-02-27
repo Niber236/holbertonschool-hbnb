@@ -1,4 +1,5 @@
 from app.models.basemodel import BaseModel
+from app.models.user import User
 
 class Place(BaseModel):
     def __init__(self, title, description, price, latitude, longitude, owner):
@@ -9,13 +10,41 @@ class Place(BaseModel):
         self.latitude = latitude
         self.longitude = longitude
         self.owner = owner
-        self.reviews = []  # Boîte vide pour les avis
-        self.amenities = [] # Boîte vide pour les équipements (wifi, piscine...)
+        self.reviews = []
+        self.amenities = []
+
+    @property
+    def price(self):
+        return self._price
+
+    @price.setter
+    def price(self, value):
+        if value < 0:
+            raise ValueError("Price must be a positive value")
+        self._price = value
+
+    @property
+    def latitude(self):
+        return self._latitude
+
+    @latitude.setter
+    def latitude(self, value):
+        if not -90.0 <= value <= 90.0:
+            raise ValueError("Latitude must be between -90 and 90")
+        self._latitude = value
+
+    @property
+    def longitude(self):
+        return self._longitude
+
+    @longitude.setter
+    def longitude(self, value):
+        if not -180.0 <= value <= 180.0:
+            raise ValueError("Longitude must be between -180 and 180")
+        self._longitude = value
 
     def add_review(self, review):
-        """Action d'ajouter un avis dans la boîte à avis du lieu"""
         self.reviews.append(review)
 
     def add_amenity(self, amenity):
-        """Action d'ajouter un équipement dans la boîte à équipements"""
         self.amenities.append(amenity)
