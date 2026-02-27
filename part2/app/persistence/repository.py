@@ -1,6 +1,4 @@
-from app.persistence.repository import Repository
-
-class InMemoryRepository(Repository):
+class InMemoryRepository:
     def __init__(self):
         self._storage = {}
 
