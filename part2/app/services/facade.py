@@ -2,6 +2,7 @@ from app.persistence.repository import InMemoryRepository
 from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.place import Place
+from app.models.review import Review
 
 class HBnBFacade:
     def __init__(self):
@@ -53,19 +54,14 @@ class HBnBFacade:
 
     # --- LOGIQUE LIEU (PLACE) ---
     def create_place(self, place_data):
-        # On extrait l'ID du propriétaire
         owner_id = place_data.pop('owner_id')
         owner = self.get_user(owner_id)
         if not owner:
             raise ValueError("Owner not found")
 
-        # On extrait la liste des équipements si elle existe
         amenities_ids = place_data.pop('amenities', [])
-
-        # On crée le lieu en lui donnant le VRAI objet owner
         place = Place(owner=owner, **place_data)
 
-        # On ajoute les équipements
         for am_id in amenities_ids:
             amenity = self.get_amenity(am_id)
             if amenity:
@@ -86,3 +82,56 @@ class HBnBFacade:
             return None
         place.update(place_data)
         return place
+
+    # --- LOGIQUE AVIS (REVIEW) ---
+    def create_review(self, review_data):
+        user_id = review_data.pop('user_id')
+        place_id = review_data.pop('place_id')
+
+        user = self.get_user(user_id)
+        if not user:
+            raise ValueError("User not found")
+
+        place = self.get_place(place_id)
+        if not place:
+            raise ValueError("Place not found")
+
+        review = Review(user=user, place=place, **review_data)
+        self.review_repo.add(review)
+        
+        # On attache l'avis au lieu
+        place.add_review(review)
+        
+        return review
+
+    def get_review(self, review_id):
+        return self.review_repo.get(review_id)
+
+    def get_all_reviews(self):
+        return self.review_repo.get_all()
+
+    def get_reviews_by_place(self, place_id):
+        place = self.get_place(place_id)
+        if not place:
+            return None
+        return place.reviews
+
+    def update_review(self, review_id, review_data):
+        review = self.get_review(review_id)
+        if not review:
+            return None
+        review.update(review_data)
+        return review
+
+    def delete_review(self, review_id):
+        review = self.get_review(review_id)
+        if not review:
+            return False
+            
+        # On doit aussi retirer l'avis de la liste du lieu
+        place = review.place
+        if review in place.reviews:
+            place.reviews.remove(review)
+            
+        self.review_repo.delete(review_id)
+        return True

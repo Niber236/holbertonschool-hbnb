@@ -3,7 +3,6 @@ from app.services import facade
 
 api = Namespace('places', description='Place operations')
 
-# Modèles pour la documentation
 place_model = api.model('Place', {
     'title': fields.String(required=True, description='Title of the place'),
     'description': fields.String(description='Description of the place'),
@@ -69,7 +68,8 @@ class PlaceResource(Resource):
                 'last_name': place.owner.last_name,
                 'email': place.owner.email
             },
-            'amenities': [{'id': a.id, 'name': a.name} for a in place.amenities]
+            'amenities': [{'id': a.id, 'name': a.name} for a in place.amenities],
+            'reviews': [{'id': r.id, 'text': r.text, 'rating': r.rating} for r in place.reviews]
         }, 200
 
     @api.expect(place_model)
@@ -83,3 +83,19 @@ class PlaceResource(Resource):
         if not updated_place:
             return {'error': 'Place not found'}, 404
         return {'message': 'Place updated successfully'}, 200
+
+@api.route('/<place_id>/reviews')
+class PlaceReviewList(Resource):
+    @api.response(200, 'List of reviews for the place retrieved successfully')
+    @api.response(404, 'Place not found')
+    def get(self, place_id):
+        """Get all reviews for a specific place"""
+        reviews = facade.get_reviews_by_place(place_id)
+        if reviews is None:
+            return {'error': 'Place not found'}, 404
+            
+        return [{
+            'id': r.id,
+            'text': r.text,
+            'rating': r.rating
+        } for r in reviews], 200
