@@ -1,13 +1,30 @@
-from app.models.user import User
+import unittest
+from app import create_app
 
-try:
-    # On crée un bon utilisateur
-    user1 = User(first_name="Bernis", last_name="Dev", email="bernis@holberton.com")
-    print(f"✅ Utilisateur créé : {user1.first_name} {user1.last_name}")
-    print(f"🆔 Son ID unique : {user1.id}")
-    print(f"🕒 Créé le : {user1.created_at}")
+class TestUserEndpoints(unittest.TestCase):
+    def setUp(self):
+        # On allume un "faux" serveur juste pour les tests
+        self.app = create_app()
+        self.client = self.app.test_client()
 
-    # On essaie de créer un utilisateur avec un mauvais email pour tester la sécurité
-    user2 = User(first_name="Stamina", last_name="Test", email="mauvais-email.com")
-except ValueError as e:
-    print(f"❌ Erreur bloquée avec succès : {e}")
+    def test_create_user_success(self):
+        # Le robot essaie de créer un utilisateur normal
+        response = self.client.post('/api/v1/users/', json={
+            "first_name": "Test",
+            "last_name": "Robot",
+            "email": "robot@test.com"
+        })
+        # On vérifie que le serveur a bien répondu 201 (Créé)
+        self.assertEqual(response.status_code, 201)
+
+    def test_create_user_invalid_data(self):
+        # Le robot essaie de créer un utilisateur en oubliant l'email (pour déclencher une erreur)
+        response = self.client.post('/api/v1/users/', json={
+            "first_name": "Test",
+            "last_name": "Robot"
+        })
+        # On vérifie que le serveur l'a bien bloqué avec une erreur 400 (Bad Request)
+        self.assertEqual(response.status_code, 400)
+
+if __name__ == '__main__':
+    unittest.main()
