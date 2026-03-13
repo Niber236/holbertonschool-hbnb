@@ -1,8 +1,8 @@
-from flask_restx import Namespace, Ressource, fields
+from flask_restx import Namespace, Resource, fields
 
-api = namespace('auth',description='Authentication operations' )
+api = Namespace('auth',description='Authentication operations' )
 
 login_model = api.model('Login' , {
-    'email': fields.string(requier=True, description='user email'),
-    'password': fields.string(required=True, description='User passeword')
+    'email': fields.String(required=True, description='user email'),
+    'password': fields.String(required=True, description='User passeword')
 })

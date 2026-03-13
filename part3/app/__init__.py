@@ -6,6 +6,7 @@ from app.api.v1.places import api as places_ns
 from app.api.v1.reviews import api as reviews_ns
 from config import config  # L'import vital de ta configuration
 from flask_jwt_extended import JWTManager
+from app.api.v1.auth import api as auth_ns
 
 
 def create_app(config_name='default'):
