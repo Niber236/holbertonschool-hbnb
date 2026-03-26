@@ -1,3 +1,4 @@
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
 
@@ -15,9 +16,11 @@ place_model = api.model('Place', {
 
 @api.route('/')
 class PlaceList(Resource):
+    
     @api.expect(place_model)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
+    @jwt_required()  # <--- LE CADENAS EST ICI, JUSTE AVANT D'OUVRIR LA PORTE
     def post(self):
         """Register a new place"""
         try:
@@ -38,6 +41,7 @@ class PlaceList(Resource):
     @api.response(200, 'List of places retrieved successfully')
     def get(self):
         """Retrieve a list of all places"""
+        # La route GET reste ouverte au public, PAS DE CADENAS ICI !
         places = facade.get_all_places()
         return [{
             'id': p.id,
@@ -51,8 +55,17 @@ class PlaceResource(Resource):
     @api.response(200, 'Place details retrieved successfully')
     @api.response(404, 'Place not found')
     def get(self, place_id):
-        """Get place details by ID"""
-        place = facade.get_place(place_id)
+        # ... (ton code actuel, ne change rien)
+
+    @api.expect(place_model)
+    @api.response(200, 'Place updated successfully')
+    @api.response(404, 'Place not found')
+    @api.response(400, 'Invalid input data')
+    @jwt_required() # <--- LE CADENAS EST ICI, SEULEMENT POUR LA MODIFICATION
+    def put(self, place_id):
+        """Update a place's information"""
+        place_data = api.payload
+        # ... (ton code actuel, ne change rien)
         if not place:
             return {'error': 'Place not found'}, 404
 
