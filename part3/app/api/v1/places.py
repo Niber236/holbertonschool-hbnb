@@ -20,7 +20,7 @@ class PlaceList(Resource):
     @api.expect(place_model)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
-    @jwt_required()  # <--- LE CADENAS EST ICI, JUSTE AVANT D'OUVRIR LA PORTE
+    @jwt_required()
     def post(self):
         """Register a new place"""
         try:
@@ -41,7 +41,6 @@ class PlaceList(Resource):
     @api.response(200, 'List of places retrieved successfully')
     def get(self):
         """Retrieve a list of all places"""
-        # La route GET reste ouverte au public, PAS DE CADENAS ICI !
         places = facade.get_all_places()
         return [{
             'id': p.id,
@@ -50,22 +49,15 @@ class PlaceList(Resource):
             'longitude': p.longitude
         } for p in places], 200
 
+
 @api.route('/<place_id>')
 class PlaceResource(Resource):
+    
     @api.response(200, 'Place details retrieved successfully')
     @api.response(404, 'Place not found')
     def get(self, place_id):
-        # ... (ton code actuel, ne change rien)
-
-    @api.expect(place_model)
-    @api.response(200, 'Place updated successfully')
-    @api.response(404, 'Place not found')
-    @api.response(400, 'Invalid input data')
-    @jwt_required() # <--- LE CADENAS EST ICI, SEULEMENT POUR LA MODIFICATION
-    def put(self, place_id):
-        """Update a place's information"""
-        place_data = api.payload
-        # ... (ton code actuel, ne change rien)
+        """Get place details by ID"""
+        place = facade.get_place(place_id)
         if not place:
             return {'error': 'Place not found'}, 404
 
@@ -89,6 +81,7 @@ class PlaceResource(Resource):
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
     @api.response(400, 'Invalid input data')
+    @jwt_required()
     def put(self, place_id):
         """Update a place's information"""
         place_data = api.payload
@@ -97,8 +90,10 @@ class PlaceResource(Resource):
             return {'error': 'Place not found'}, 404
         return {'message': 'Place updated successfully'}, 200
 
+
 @api.route('/<place_id>/reviews')
 class PlaceReviewList(Resource):
+    
     @api.response(200, 'List of reviews for the place retrieved successfully')
     @api.response(404, 'Place not found')
     def get(self, place_id):
