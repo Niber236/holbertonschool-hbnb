@@ -135,3 +135,17 @@ class HBnBFacade:
             
         self.review_repo.delete(review_id)
         return True
+    # --- LOGIQUE LIEU (PLACE) ---
+    # ... (garde le reste)
+
+    def delete_place(self, place_id):
+        """Supprime un lieu s'il existe"""
+        place = self.get_place(place_id)
+        if not place:
+            return False
+        
+        # Optionnel : Tu pourrais aussi supprimer les reviews liées ici
+        # pour éviter d'avoir des reviews orphelines dans ton InMemoryRepo
+        
+        self.place_repo.delete(place_id)
+        return True

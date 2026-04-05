@@ -10,7 +10,7 @@ place_model = api.model('Place', {
     'price': fields.Float(required=True, description='Price per night'),
     'latitude': fields.Float(required=True, description='Latitude of the place'),
     'longitude': fields.Float(required=True, description='Longitude of the place'),
-    'owner_id': fields.String(required=True, description='ID of the owner'),
+    'owner_id': fields.String(required=False, description='ID of the owner (ignored, taken from JWT)'),
     'amenities': fields.List(fields.String, required=False, description="List of amenities ID's")
 })
 
@@ -25,6 +25,10 @@ class PlaceList(Resource):
         """Register a new place"""
         try:
             place_data = api.payload
+            
+            # SÉCURITÉ : On force l'ID du propriétaire avec celui du JWT
+            place_data['owner_id'] = get_jwt_identity()
+            
             new_place = facade.create_place(place_data)
             return {
                 'id': new_place.id,
@@ -100,6 +104,26 @@ class PlaceResource(Resource):
         facade.update_place(place_id, place_data)
         
         return {'message': 'Place updated successfully'}, 200
+
+    @api.response(200, 'Place deleted successfully')
+    @api.response(404, 'Place not found')
+    @api.response(403, 'Unauthorized action')
+    @jwt_required()
+    def delete(self, place_id):
+        """Delete a place"""
+        current_user_id = get_jwt_identity()
+        is_admin = get_jwt().get('is_admin', False)
+        
+        place = facade.get_place(place_id)
+        if not place:
+            return {'error': 'Place not found'}, 404
+            
+        # VÉRIFICATION : C'est TON lieu OU tu es l'administrateur ?
+        if place.owner.id != current_user_id and not is_admin:
+            return {'error': 'Unauthorized action'}, 403
+
+        facade.delete_place(place_id)
+        return {'message': 'Place deleted successfully'}, 200
 
 
 @api.route('/<place_id>/reviews')
