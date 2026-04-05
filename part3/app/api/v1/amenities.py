@@ -1,4 +1,5 @@
 from flask_restx import Namespace, Resource, fields
+from flask_jwt_extended import jwt_required, get_jwt
 from app.services import facade
 
 api = Namespace('amenities', description='Amenity operations')
@@ -12,8 +13,15 @@ class AmenityList(Resource):
     @api.expect(amenity_model)
     @api.response(201, 'Amenity successfully created')
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Admin privilege required')
+    @jwt_required() # <--- Le cadenas
     def post(self):
         """Register a new amenity"""
+        # Le scanner vérifie si le mec est le patron
+        claims = get_jwt()
+        if not claims.get('is_admin'):
+            return {'error': 'Admin privilege required'}, 403
+
         amenity_data = api.payload
         new_amenity = facade.create_amenity(amenity_data)
         return {'id': new_amenity.id, 'name': new_amenity.name}, 201
@@ -21,6 +29,7 @@ class AmenityList(Resource):
     @api.response(200, 'List of amenities retrieved successfully')
     def get(self):
         """Retrieve a list of all amenities"""
+        # La lecture reste gratuite pour tout le monde
         amenities = facade.get_all_amenities()
         return [{'id': a.id, 'name': a.name} for a in amenities], 200
 
@@ -30,6 +39,7 @@ class AmenityResource(Resource):
     @api.response(404, 'Amenity not found')
     def get(self, amenity_id):
         """Get amenity details by ID"""
+        # La lecture reste gratuite pour tout le monde
         amenity = facade.get_amenity(amenity_id)
         if not amenity:
             return {'error': 'Amenity not found'}, 404
@@ -39,11 +49,17 @@ class AmenityResource(Resource):
     @api.response(200, 'Amenity updated successfully')
     @api.response(404, 'Amenity not found')
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Admin privilege required')
+    @jwt_required() # <--- Le cadenas
     def put(self, amenity_id):
         """Update an amenity's information"""
+        # Le scanner vérifie si le mec est le patron
+        claims = get_jwt()
+        if not claims.get('is_admin'):
+            return {'error': 'Admin privilege required'}, 403
+
         amenity_data = api.payload
         updated_amenity = facade.update_amenity(amenity_id, amenity_data)
         if not updated_amenity:
             return {'error': 'Amenity not found'}, 404
-        # Attention ici : la consigne demande de renvoyer un "message" précis pour le PUT
         return {'message': 'Amenity updated successfully'}, 200

@@ -1,4 +1,4 @@
-from app.persistence.repository import InMemoryRepository
+from app.persistence.repository import InMemoryRepository, SQLAlchemyRepository
 from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.place import Place
@@ -6,7 +6,10 @@ from app.models.review import Review
 
 class HBnBFacade:
     def __init__(self):
-        self.user_repo = InMemoryRepository()
+        # ON BRANCHE LA VRAIE BASE DE DONNÉES ICI, SEULEMENT POUR LES UTILISATEURS
+        self.user_repo = SQLAlchemyRepository(User)
+        
+        # Les autres restent sur l'ancienne mémoire temporaire pour le moment
         self.place_repo = InMemoryRepository()
         self.review_repo = InMemoryRepository()
         self.amenity_repo = InMemoryRepository()
@@ -14,7 +17,7 @@ class HBnBFacade:
     # --- LOGIQUE UTILISATEUR (USER) ---
     def create_user(self, user_data):
         user = User(**user_data)
-        self.user_repo.add(user)
+        self.user_repo.save(user)  # <-- Attention : on utilise 'save' avec la nouvelle machine
         return user
 
     def get_user(self, user_id):
@@ -27,11 +30,8 @@ class HBnBFacade:
         return self.user_repo.get_all()
 
     def update_user(self, user_id, user_data):
-        user = self.user_repo.get(user_id)
-        if not user:
-            return None
-        user.update(user_data)
-        return user
+        # Le nouveau système gère la mise à jour directement
+        return self.user_repo.update(user_id, user_data)
 
     # --- LOGIQUE ÉQUIPEMENT (AMENITY) ---
     def create_amenity(self, amenity_data):
