@@ -1,22 +1,28 @@
 from flask import Flask
 from flask_restx import Api
-from app.api.v1.users import api as users_ns
-from app.api.v1.amenities import api as amenities_ns
-from app.api.v1.places import api as places_ns
-from app.api.v1.reviews import api as reviews_ns
-from config import config  # L'import vital de ta configuration
 from flask_jwt_extended import JWTManager
-from app.api.v1.auth import api as auth_ns
+from flask_sqlalchemy import SQLAlchemy
+from config import config
 
+# 1. On crée l'outil base de données AVANT la création de l'appli
+db = SQLAlchemy()
 
 def create_app(config_name='default'):
-    """Crée l'application en lui injectant les bons paramètres"""
     app = Flask(__name__)
-    
-    # <-- LA LIGNE CLÉ : On charge les paramètres dans Flask
     app.config.from_object(config[config_name])
+    
+    # 2. On branche la base de données à l'application
+    db.init_app(app)
+    
     jwt = JWTManager(app)
     api = Api(app, version='1.0', title='HBnB API', description='HBnB Application API', doc='/api/v1/')
+
+    # 3. On importe les namespaces ICI pour éviter les imports circulaires avec 'db'
+    from app.api.v1.users import api as users_ns
+    from app.api.v1.amenities import api as amenities_ns
+    from app.api.v1.places import api as places_ns
+    from app.api.v1.reviews import api as reviews_ns
+    from app.api.v1.auth import api as auth_ns
 
     api.add_namespace(users_ns, path='/api/v1/users')
     api.add_namespace(amenities_ns, path='/api/v1/amenities')
