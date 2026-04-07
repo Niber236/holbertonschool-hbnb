@@ -6,13 +6,10 @@ from app.models.review import Review
 
 class HBnBFacade:
     def __init__(self):
-        # ON BRANCHE LA VRAIE BASE DE DONNÉES ICI, SEULEMENT POUR LES UTILISATEURS
         self.user_repo = SQLAlchemyRepository(User)
-        
-        # Les autres restent sur l'ancienne mémoire temporaire pour le moment
-        self.place_repo = InMemoryRepository()
-        self.review_repo = InMemoryRepository()
-        self.amenity_repo = InMemoryRepository()
+        self.place_repo = SQLAlchemyRepository(Place)
+        self.review_repo = SQLAlchemyRepository(Review)
+        self.amenity_repo = SQLAlchemyRepository(Amenity)
 
     # --- LOGIQUE UTILISATEUR (USER) ---
     def create_user(self, user_data):
@@ -36,7 +33,7 @@ class HBnBFacade:
     # --- LOGIQUE ÉQUIPEMENT (AMENITY) ---
     def create_amenity(self, amenity_data):
         amenity = Amenity(**amenity_data)
-        self.amenity_repo.add(amenity)
+        self.amenity_repo.save(amenity)
         return amenity
 
     def get_amenity(self, amenity_id):
@@ -67,7 +64,7 @@ class HBnBFacade:
             if amenity:
                 place.add_amenity(amenity)
 
-        self.place_repo.add(place)
+        self.place_repo.save(place)
         return place
 
     def get_place(self, place_id):
@@ -97,7 +94,7 @@ class HBnBFacade:
             raise ValueError("Place not found")
 
         review = Review(user=user, place=place, **review_data)
-        self.review_repo.add(review)
+        self.review_repo.save(review)
         
         # On attache l'avis au lieu
         place.add_review(review)

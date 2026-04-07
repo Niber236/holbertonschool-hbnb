@@ -1,16 +1,11 @@
+from app import db
 from app.models.basemodel import BaseModel
 
 class Amenity(BaseModel):
+    __tablename__ = 'amenities'
+    
+    name = db.Column(db.String(50), nullable=False)
+
     def __init__(self, name):
         super().__init__()
         self.name = name
-
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, value):
-        if not value or len(value) > 50:
-            raise ValueError("Name must be provided and under 50 characters")
-        self._name = value
