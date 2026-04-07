@@ -57,30 +57,19 @@ class HBnBFacade:
             raise ValueError("Owner not found")
 
         amenities_ids = place_data.pop('amenities', [])
-        place = Place(owner=owner, **place_data)
+        
+        # On passe directement owner_id au modèle
+        place = Place(owner_id=owner.id, **place_data)
 
         for am_id in amenities_ids:
             amenity = self.get_amenity(am_id)
             if amenity:
-                place.add_amenity(amenity)
+                # Avec SQLAlchemy, c'est une liste directe, on utilise .append()
+                place.amenities.append(amenity)
 
         self.place_repo.save(place)
         return place
 
-    def get_place(self, place_id):
-        return self.place_repo.get(place_id)
-
-    def get_all_places(self):
-        return self.place_repo.get_all()
-
-    def update_place(self, place_id, place_data):
-        place = self.get_place(place_id)
-        if not place:
-            return None
-        place.update(place_data)
-        return place
-
-    # --- LOGIQUE AVIS (REVIEW) ---
     def create_review(self, review_data):
         user_id = review_data.pop('user_id')
         place_id = review_data.pop('place_id')
@@ -93,11 +82,9 @@ class HBnBFacade:
         if not place:
             raise ValueError("Place not found")
 
-        review = Review(user=user, place=place, **review_data)
+        # On passe directement les IDs au modèle
+        review = Review(user_id=user.id, place_id=place.id, **review_data)
         self.review_repo.save(review)
-        
-        # On attache l'avis au lieu
-        place.add_review(review)
         
         return review
 
