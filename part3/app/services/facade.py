@@ -14,7 +14,7 @@ class HBnBFacade:
     # --- LOGIQUE UTILISATEUR (USER) ---
     def create_user(self, user_data):
         user = User(**user_data)
-        self.user_repo.save(user)  # <-- Attention : on utilise 'save' avec la nouvelle machine
+        self.user_repo.save(user)
         return user
 
     def get_user(self, user_id):
@@ -27,7 +27,6 @@ class HBnBFacade:
         return self.user_repo.get_all()
 
     def update_user(self, user_id, user_data):
-        # Le nouveau système gère la mise à jour directement
         return self.user_repo.update(user_id, user_data)
 
     # --- LOGIQUE ÉQUIPEMENT (AMENITY) ---
@@ -58,18 +57,37 @@ class HBnBFacade:
 
         amenities_ids = place_data.pop('amenities', [])
         
-        # On passe directement owner_id au modèle
         place = Place(owner_id=owner.id, **place_data)
 
         for am_id in amenities_ids:
             amenity = self.get_amenity(am_id)
             if amenity:
-                # Avec SQLAlchemy, c'est une liste directe, on utilise .append()
                 place.amenities.append(amenity)
 
         self.place_repo.save(place)
         return place
 
+    def get_place(self, place_id):
+        return self.place_repo.get(place_id)
+
+    def get_all_places(self):
+        return self.place_repo.get_all()
+
+    def update_place(self, place_id, place_data):
+        place = self.get_place(place_id)
+        if not place:
+            return None
+        place.update(place_data)
+        return place
+
+    def delete_place(self, place_id):
+        place = self.get_place(place_id)
+        if not place:
+            return False
+        self.place_repo.delete(place_id)
+        return True
+
+    # --- LOGIQUE AVIS (REVIEW) ---
     def create_review(self, review_data):
         user_id = review_data.pop('user_id')
         place_id = review_data.pop('place_id')
@@ -82,10 +100,8 @@ class HBnBFacade:
         if not place:
             raise ValueError("Place not found")
 
-        # On passe directement les IDs au modèle
         review = Review(user_id=user.id, place_id=place.id, **review_data)
         self.review_repo.save(review)
-        
         return review
 
     def get_review(self, review_id):
@@ -111,25 +127,5 @@ class HBnBFacade:
         review = self.get_review(review_id)
         if not review:
             return False
-            
-        # On doit aussi retirer l'avis de la liste du lieu
-        place = review.place
-        if review in place.reviews:
-            place.reviews.remove(review)
-            
         self.review_repo.delete(review_id)
-        return True
-    # --- LOGIQUE LIEU (PLACE) ---
-    # ... (garde le reste)
-
-    def delete_place(self, place_id):
-        """Supprime un lieu s'il existe"""
-        place = self.get_place(place_id)
-        if not place:
-            return False
-        
-        # Optionnel : Tu pourrais aussi supprimer les reviews liées ici
-        # pour éviter d'avoir des reviews orphelines dans ton InMemoryRepo
-        
-        self.place_repo.delete(place_id)
         return True
