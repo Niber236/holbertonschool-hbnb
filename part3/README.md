@@ -1,43 +1,67 @@
-# HBnB Evolution - Part 2: Business Logic & API
 
-## Introduction
-This project is the second part of the HBnB Evolution series (Airbnb clone). The goal is to implement the **Business Logic** and the **API endpoints** of the application.
+HBnB Evolution - Part 3: Database Integration & Authentication
 
-We have built a backend using **Flask** and **Flask-RESTx** that handles:
-- **Users**: Registration and profile management.
-- **Places**: Creation and listing of rental places.
-- **Reviews**: Posting and reading reviews for places.
-- **Amenities**: Managing features like Wi-Fi, Pool, etc.
 
-## Architecture
-The application follows a strict **3-Tier Architecture** to separate concerns:
+ Introduction
 
-1.  **Presentation Layer (`app/api/v1/`)**:
-    - Handles HTTP requests (GET, POST, PUT, DELETE).
-    - Validates input data using Data Transfer Objects (DTOs) via Flask-RESTx.
-    - Communicates *only* with the Facade.
+Ce projet marque la troisième étape du développement de l'application HBnB (clone d'AirBnB). Après avoir défini l'architecture et la logique métier, nous avons migré la persistence des données vers une base de données relationnelle SQLite gérée par SQLAlchemy.
 
-2.  **Business Logic Layer (`app/services/`)**:
-    - Implemented using the **Facade Pattern** (`HBnBFacade`).
-    - Acts as the central manager. It receives calls from the API, applies business rules (e.g., "Does this user exist?"), and interacts with the repository.
+Cette version intègre également une gestion sécurisée de l'authentification via JWT (JSON Web Tokens) et le hachage des mots de passe avec Bcrypt.
 
-3.  **Persistence Layer (`app/persistence/`)**:
-    - Currently implemented as an **In-Memory Repository**.
-    - Stores objects (Users, Places, Reviews) in Python dictionaries/lists during the application runtime.
-    - Designed to be easily swapped for a SQL database in future parts.
+ Architecture
 
-## Project Structure
-```text
-.
-├── app/
-│   ├── api/v1/          # API Endpoints (Presentation Layer)
-│   │   ├── users.py
-│   │   ├── places.py
-│   │   ├── reviews.py
-│   │   └── amenities.py
-│   ├── models/          # Business Objects (User, Place, Review...)
-│   ├── services/        # Business Logic (Facade)
-│   └── persistence/     # Data Storage (Repository)
-├── run.py               # Application entry point
-├── config.py            # Configuration settings
-└── requirements.txt     # Python dependencies
+Le système respecte une architecture en 3 couches pour garantir la modularité :
+
+Couche de Présentation (app/api/v1/) : Endpoints RESTful utilisant Flask-RESTx pour la validation et la documentation Swagger.
+
+Couche Logique (app/services/) : Centralisation via le pattern Facade (HBnBFacade) qui orchestre les interactions entre les modèles et la base de données.
+
+Couche de Persistance (app/persistence/) : Utilisation de SQLAlchemy pour transformer nos objets Python en tables SQL.
+
+ Schéma de la Base de Données
+
+La structure est composée de 5 tables principales interconnectées :
+
+users : Utilisateurs avec gestion des rôles (admin).
+
+places : Hébergements liés à un propriétaire.
+
+reviews : Avis laissés par les utilisateurs sur les lieux.
+
+amenities : Équipements disponibles (WiFi, Piscine, etc.).
+
+place_amenity : Table d'association pour la relation Many-to-Many entre lieux et équipements.
+
+Diagramme ER (Mermaid)
+Extrait de code
+erDiagram
+    users ||--o{ places : "owns"
+    users ||--o{ reviews : "writes"
+    places ||--o{ reviews : "receives"
+    places ||--o{ place_amenity : "contains"
+    amenities ||--o{ place_amenity : "belongs to"
+Le diagramme complet est disponible dans hbnb_er_diagram.md.
+
+ Installation et Lancement
+Installation des dépendances :
+
+Bash
+pip install -r requirements.txt
+Initialisation de la base de données :
+
+Bash
+sqlite3 hbnb.db < init_db.sql
+Démarrage du serveur :
+
+Bash
+python3 run.py
+Le serveur sera accessible sur http://127.0.0.1:5000.
+
+🔑 Authentification
+Pour accéder aux routes protégées, vous devez obtenir un jeton JWT via l'endpoint de login :
+
+URL : /api/v1/auth/login
+
+Méthode : POST
+
+Identifiants par défaut : admin@hbnb.io / admin1234.
