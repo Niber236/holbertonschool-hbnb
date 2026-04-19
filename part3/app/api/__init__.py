@@ -1,51 +1,51 @@
-from abc import ABC, abstractmethod
+from flask import Flask
+from flask_restx import Api
+from flask_jwt_extended import JWTManager
+from flask_sqlalchemy import SQLAlchemy
+from config import config
 
-class Repository(ABC):
-    @abstractmethod
-    def add(self, obj):
-        pass
+# On crée l'outil base de données AVANT la création de l'appli
+db = SQLAlchemy()
 
-    @abstractmethod
-    def get(self, obj_id):
-        pass
+def create_app(config_name='default'):
+    app = Flask(__name__)
+    app.config.from_object(config[config_name])
+    
+    db.init_app(app)
+    
+    jwt = JWTManager(app)
 
-    @abstractmethod
-    def get_all(self):
-        pass
+    # CONFIGURATION SÉCURITÉ POUR SWAGGER
+    authorizations = {
+        'apikey': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization',
+            'description': "Tapez 'Bearer <votre_token>' pour vous authentifier"
+        }
+    }
 
-    @abstractmethod
-    def update(self, obj_id, data):
-        pass
+    api = Api(
+        app, 
+        version='1.0', 
+        title='HBnB API', 
+        description='HBnB Application API', 
+        doc='/api/v1/',
+        authorizations=authorizations, # <--- INDISPENSABLE
+        security='apikey'              # <--- INDISPENSABLE
+    )
 
-    @abstractmethod
-    def delete(self, obj_id):
-        pass
+    # Importations locales pour éviter les imports circulaires
+    from app.api.v1.users import api as users_ns
+    from app.api.v1.amenities import api as amenities_ns
+    from app.api.v1.places import api as places_ns
+    from app.api.v1.reviews import api as reviews_ns
+    from app.api.v1.auth import api as auth_ns
 
-    @abstractmethod
-    def get_by_attribute(self, attr_name, attr_value):
-        pass
-
-class InMemoryRepository(Repository):
-    def __init__(self):
-        self._storage = {}
-
-    def add(self, obj):
-        self._storage[obj.id] = obj
-
-    def get(self, obj_id):
-        return self._storage.get(obj_id)
-
-    def get_all(self):
-        return list(self._storage.values())
-
-    def update(self, obj_id, data):
-        obj = self.get(obj_id)
-        if obj:
-            obj.update(data)
-
-    def delete(self, obj_id):
-        if obj_id in self._storage:
-            del self._storage[obj_id]
-
-    def get_by_attribute(self, attr_name, attr_value):
-        return next((obj for obj in self._storage.values() if getattr(obj, attr_name) == attr_value), None)
+    api.add_namespace(users_ns, path='/api/v1/users')
+    api.add_namespace(amenities_ns, path='/api/v1/amenities')
+    api.add_namespace(places_ns, path='/api/v1/places')
+    api.add_namespace(reviews_ns, path='/api/v1/reviews')
+    api.add_namespace(auth_ns, path='/api/v1/auth')
+    
+    return app

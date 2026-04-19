@@ -17,9 +17,16 @@ class Login(Resource):
         email = login_data.get('email')
         password = login_data.get('password')
         user = facade.get_user_by_email(email)
+        
         if not user or not user.verify_password(password):
             return {'error': 'Invalid credentials'}, 401
-        access_token = create_access_token(identity=user.id)
+        
+        # MODIFIE CETTE LIGNE ICI :
+        access_token = create_access_token(
+            identity=user.id, 
+            additional_claims={'is_admin': user.is_admin}
+        )
+        
         return {'access_token': access_token}, 200
      
         
