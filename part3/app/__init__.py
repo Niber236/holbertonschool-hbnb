@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from flask_restx import Api
 from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
@@ -12,6 +13,7 @@ def create_app(config_name='default'):
     Application factory to create and configure the Flask app.
     """
     app = Flask(__name__)
+    CORS(app)
     app.config.from_object(config[config_name])
     
     # 2. On branche la base de données à l'application

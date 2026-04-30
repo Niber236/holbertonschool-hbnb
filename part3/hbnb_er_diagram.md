@@ -1,3 +1,4 @@
+```mermaid
 erDiagram
     users {
         VARCHAR(36) id PK
