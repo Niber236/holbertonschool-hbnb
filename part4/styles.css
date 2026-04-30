@@ -1,0 +1,169 @@
+/* --- RESET GÉNÉRAL --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f7f7f9;
+    color: #222;
+    line-height: 1.6;
+}
+
+/* --- EN-TÊTE (HEADER) --- */
+header {
+    background-color: #ff385c; /* Le rouge Airbnb */
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+header .logo {
+    height: 40px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    transition: opacity 0.2s;
+}
+
+nav a:hover {
+    opacity: 0.8;
+}
+
+/* --- STRUCTURE PRINCIPALE --- */
+main {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    min-height: 70vh;
+}
+
+h1, h2 {
+    margin-bottom: 20px;
+    color: #222;
+}
+
+/* --- CONTRÔLES (Filtre) --- */
+.controls {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    display: inline-block;
+    margin-bottom: 30px !important;
+}
+
+.controls select {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+/* --- GRILLE DES APPARTEMENTS --- */
+#places-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+/* --- CARTES (Appartements & Avis) --- */
+.place-card, .review-card, .place-info {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    transition: transform 0.2s;
+}
+
+.place-card:hover {
+    transform: translateY(-5px);
+}
+
+.place-card h2 {
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+}
+
+.place-card p {
+    color: #717171;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+}
+
+/* --- BOUTONS --- */
+.details-button, button[type="submit"] {
+    display: inline-block;
+    background-color: #ff385c;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.2s;
+}
+
+.details-button:hover, button[type="submit"]:hover {
+    background-color: #d90b3e;
+}
+
+/* --- FORMULAIRES (Login & Review) --- */
+.form, .add-review {
+    max-width: 500px;
+    margin: 0 auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.form label, .add-review label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.form input, .add-review textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-family: inherit;
+}
+
+/* --- DETAILS APPARTEMENT --- */
+.place-info {
+    margin-bottom: 30px;
+}
+
+.reviews {
+    margin-top: 40px;
+}
+
+.review-card {
+    margin-bottom: 15px;
+    background-color: #fcfcfc;
+}
+
+/* --- PIED DE PAGE --- */
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #222;
+    color: white;
+    margin-top: 40px;
+}
